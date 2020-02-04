@@ -40,6 +40,7 @@ public class VersionMinterWithCounter implements HollowProducer.VersionMinter {
      *
      * @return a new state version
      */
+    @Override
     public long mint() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));

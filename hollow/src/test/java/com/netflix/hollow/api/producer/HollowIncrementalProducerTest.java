@@ -976,6 +976,7 @@ public class HollowIncrementalProducerTest {
                 .withAnnouncer(fakeAnnouncerSpy)
                 .withVersionMinter(new HollowProducer.VersionMinter() {
                     long counter = 0;
+                    @Override
                     public long mint() {
                         return ++counter;
                     }

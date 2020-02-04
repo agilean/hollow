@@ -385,8 +385,8 @@ public class HollowProducer extends AbstractHollowProducer {
          * <p>
          * Populating asynchronously has these additional requirements:
          * <ul>
-         * <li>MUST NOT return from this method until all workers have completed – either normally
-         * or exceptionally – or have been cancelled</li>
+         * <li>MUST NOT return from this method until all workers have completed either normally
+         * or exceptionally or have been cancelled</li>
          * <li>MUST throw an exception if any worker completed exceptionally. MAY cancel remaining tasks
          * <em>or</em> wait for the remainder to complete.</li>
          * </ul>
@@ -973,8 +973,8 @@ public class HollowProducer extends AbstractHollowProducer {
              * <p>
              * Incrementally populating asynchronously has these additional requirements:
              * <ul>
-             * <li>MUST NOT return from this method until all workers have completed – either normally
-             * or exceptionally – or have been cancelled</li>
+             * <li>MUST NOT return from this method until all workers have completed either normally
+             * or exceptionally or have been cancelled</li>
              * <li>MUST throw an exception if any worker completed exceptionally. MAY cancel remaining tasks
              * <em>or</em> wait for the remainder to complete.</li>
              * </ul>

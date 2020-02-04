@@ -94,8 +94,10 @@ public class HollowClientUpdater {
      * Note that this method is synchronized and it is the only method that modifies the
      * {@code hollowDataHolderVolatile}, so we don't need to worry about it changing out from
      * under us.
+     *
+     * remove synchronized
      */
-    public synchronized boolean updateTo(long requestedVersion) throws Throwable {
+    public boolean updateTo(long requestedVersion) throws Throwable {
         if (requestedVersion == getCurrentVersionId()) {
             if (requestedVersion == HollowConstants.VERSION_NONE && hollowDataHolderVolatile == null) {
                 LOG.warning("No versions to update to, initializing to empty state");

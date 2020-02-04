@@ -230,6 +230,7 @@ public class HollowProducerConsumerTests {
                 .withVersionMinter(new VersionMinter() {
                     long counter = 0;
 
+                    @Override
                     public long mint() {
                         return ++counter;
                     }

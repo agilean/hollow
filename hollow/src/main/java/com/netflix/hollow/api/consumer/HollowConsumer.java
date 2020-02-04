@@ -172,6 +172,8 @@ public class HollowConsumer {
      * latest version available in the blob store.
      * <p>
      * This is a blocking call.
+     *
+     *
      */
     public void triggerRefresh() {
         refreshLock.writeLock().lock();
@@ -280,7 +282,7 @@ public class HollowConsumer {
      * A failure during the initial load <em>will not</em> cause the future to complete exceptionally; this allows
      * for a subsequent data version to eventually succeed.
      * <p>
-     * In a consumer without published or announced versions – or one that always fails the initial load – the future
+     * In a consumer without published or announced versions or one that always fails the initial load the future
      * will remain incomplete indefinitely.
      *
      * @return a future which, when completed, has a value set to the data version that was initially loaded

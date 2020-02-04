@@ -32,9 +32,16 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 
 /**
  * A HollowBlobReader is used to populate and update data in a {@link HollowReadStateEngine}, via the consumption
@@ -158,11 +165,29 @@ public class HollowBlobReader {
     }
 
     private void notifyEndUpdate() {
+        List<HollowTypeStateListener> list = new ArrayList<>();
         for(HollowTypeReadState typeState : stateEngine.getTypeStates()) {
             for(HollowTypeStateListener listener : typeState.getListeners()) {
-                listener.endUpdate();
+                list.add(listener);
+                //listener.endUpdate();
             }
         }
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 10, 200, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(100));
+        int size = list.size();
+        int treadPool = 10;
+        int subListSize = size/treadPool;
+        List<HollowTypeStateListener> subList;
+        Instant start = Instant.now();
+        for (int i = 0; i < treadPool; i++) {
+            if (i == treadPool - 1) {
+                subList = list.subList(i * subListSize, size);
+            } else {
+                subList = list.subList(i * subListSize, (i+1) * subListSize);
+            }
+            executor.execute(new EndUpdateThread(subList));
+        }
+        long diff = java.time.Duration.between(start, Instant.now()).toNanos() / 1000000;
+        log.info("NOTIFY END UPDATE COMPLETED IN " + diff + "ms");
     }
 
     private String readTypeStateSnapshot(DataInputStream is, HollowBlobHeader header, HollowFilterConfig filter) throws IOException {
