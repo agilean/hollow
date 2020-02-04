@@ -164,22 +164,24 @@ public class HollowBlobReader {
         }
     }
 
+    /**
+     * Dealing with "end update" through multithreading
+     */
     private void notifyEndUpdate() {
         List<HollowTypeStateListener> list = new ArrayList<>();
         for(HollowTypeReadState typeState : stateEngine.getTypeStates()) {
             for(HollowTypeStateListener listener : typeState.getListeners()) {
                 list.add(listener);
-                //listener.endUpdate();
             }
         }
         ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 10, 200, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(100));
         int size = list.size();
-        int treadPool = 10;
-        int subListSize = size/treadPool;
+        int threadPool = 10;
+        int subListSize = size/threadPool;
         List<HollowTypeStateListener> subList;
         Instant start = Instant.now();
-        for (int i = 0; i < treadPool; i++) {
-            if (i == treadPool - 1) {
+        for (int i = 0; i < threadPool; i++) {
+            if (i == threadPool - 1) {
                 subList = list.subList(i * subListSize, size);
             } else {
                 subList = list.subList(i * subListSize, (i+1) * subListSize);
