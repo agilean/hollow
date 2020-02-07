@@ -1,5 +1,5 @@
 group 'com.netflix.hollow#hollow'
-version '4.7.30'
+version '4.7.31'
 apply plugin: 'java-library'
 
 dependencies {

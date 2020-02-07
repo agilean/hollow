@@ -428,7 +428,7 @@ public class HollowPrimaryKeyIndex implements HollowTypeStateListener {
             hashTable.hashTable.destroy(memoryRecycler);
     }
 
-    private synchronized void reindex() {
+    public synchronized void reindex() {
         PrimaryKeyIndexHashTable hashTable = hashTableVolatile;
         // Could be null on first reindex
         if(hashTable != null) {

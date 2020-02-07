@@ -22,6 +22,8 @@ import com.netflix.hollow.api.consumer.HollowConsumer;
 import com.netflix.hollow.api.custom.HollowAPI;
 import com.netflix.hollow.api.objects.HollowObject;
 import com.netflix.hollow.core.index.FieldPaths;
+import com.netflix.hollow.core.index.HollowHashIndex;
+import com.netflix.hollow.core.index.HollowHashIndexBuilder;
 import com.netflix.hollow.core.index.HollowPrimaryKeyIndex;
 import com.netflix.hollow.core.index.key.PrimaryKey;
 import com.netflix.hollow.core.read.engine.HollowReadStateEngine;
@@ -173,11 +175,6 @@ public class UniqueKeyIndex<T extends HollowObject, Q>
     }
 
     @Override public void snapshotUpdateOccurred(HollowAPI api, HollowReadStateEngine stateEngine, long version) {
-        HollowPrimaryKeyIndex hpki = this.hpki;
-        hpki.detachFromDeltaUpdates();
-        hpki = new HollowPrimaryKeyIndex(consumer.getStateEngine(), hpki.getPrimaryKey());
-        hpki.listenForDeltaUpdates();
-        this.hpki = hpki;
         this.api = api;
     }
 
@@ -189,6 +186,7 @@ public class UniqueKeyIndex<T extends HollowObject, Q>
     }
 
     @Override public void refreshSuccessful(long beforeVersion, long afterVersion, long requestedVersion) {
+        hpki = new HollowPrimaryKeyIndex(consumer.getStateEngine(), hpki.getPrimaryKey());
     }
 
     @Override public void refreshFailed(

@@ -64,7 +64,7 @@ public class HollowHashIndex implements HollowTypeStateListener {
     /**
      * Recreate the hash index entirely
      */
-    private void reindexHashIndex() {
+    public void reindexHashIndex() {
         HollowHashIndexBuilder builder = new HollowHashIndexBuilder(stateEngine, type, selectField, matchFields);
 
         builder.buildIndex();

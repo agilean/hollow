@@ -25,10 +25,14 @@ import com.netflix.hollow.core.memory.pool.ArraySegmentRecycler;
 import com.netflix.hollow.core.read.engine.HollowReadStateEngine;
 import com.netflix.hollow.core.read.filter.HollowFilterConfig;
 import com.netflix.hollow.core.util.HollowObjectHashCodeFinder;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A class comprising much of the internal state of a {@link HollowConsumer}.  Not intended for external consumption.
@@ -158,9 +162,8 @@ public class HollowClientUpdater {
             } else {
                 hollowDataHolderVolatile.update(updatePlan, localListeners);
             }
-
-            for(HollowConsumer.RefreshListener refreshListener : localListeners)
-                refreshListener.refreshSuccessful(beforeVersion, getCurrentVersionId(), requestedVersion);
+            Arrays.stream(localListeners).parallel().forEach(refreshListener -> refreshListener.refreshSuccessful(beforeVersion, getCurrentVersionId(), requestedVersion));
+            //new CopyOnWriteArrayList<>(localListeners).parallelStream().forEach(refreshListener -> refreshListener.refreshSuccessful(beforeVersion, getCurrentVersionId(), requestedVersion));
 
             metrics.updateTypeStateMetrics(getStateEngine(), requestedVersion);
             if(metricsCollector != null)

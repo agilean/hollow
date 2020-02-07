@@ -23,25 +23,18 @@ import com.netflix.hollow.core.read.engine.map.HollowMapTypeReadState;
 import com.netflix.hollow.core.read.engine.object.HollowObjectTypeReadState;
 import com.netflix.hollow.core.read.engine.set.HollowSetTypeReadState;
 import com.netflix.hollow.core.read.filter.HollowFilterConfig;
-import com.netflix.hollow.core.schema.HollowListSchema;
-import com.netflix.hollow.core.schema.HollowMapSchema;
-import com.netflix.hollow.core.schema.HollowObjectSchema;
-import com.netflix.hollow.core.schema.HollowSchema;
-import com.netflix.hollow.core.schema.HollowSetSchema;
+import com.netflix.hollow.core.schema.*;
+
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.TreeSet;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A HollowBlobReader is used to populate and update data in a {@link HollowReadStateEngine}, via the consumption
@@ -168,28 +161,12 @@ public class HollowBlobReader {
      * Dealing with "end update" through multithreading
      */
     private void notifyEndUpdate() {
-        List<HollowTypeStateListener> list = new ArrayList<>();
+        List<HollowTypeStateListener> listeners = new ArrayList<>();
         for(HollowTypeReadState typeState : stateEngine.getTypeStates()) {
-            for(HollowTypeStateListener listener : typeState.getListeners()) {
-                list.add(listener);
-            }
+            listeners.addAll(Arrays.stream(typeState.getListeners()).collect(Collectors.toList()));
+            //listeners.addAll(new CopyOnWriteArrayList<>(typeState.getListeners()));
         }
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(10, 10, 200, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(100));
-        int size = list.size();
-        int threadPool = 10;
-        int subListSize = size/threadPool;
-        List<HollowTypeStateListener> subList;
-        Instant start = Instant.now();
-        for (int i = 0; i < threadPool; i++) {
-            if (i == threadPool - 1) {
-                subList = list.subList(i * subListSize, size);
-            } else {
-                subList = list.subList(i * subListSize, (i+1) * subListSize);
-            }
-            executor.execute(new EndUpdateThread(subList));
-        }
-        long diff = java.time.Duration.between(start, Instant.now()).toNanos() / 1000000;
-        log.info("NOTIFY END UPDATE COMPLETED IN " + diff + "ms");
+        listeners.parallelStream().forEach(HollowTypeStateListener::endUpdate);
     }
 
     private String readTypeStateSnapshot(DataInputStream is, HollowBlobHeader header, HollowFilterConfig filter) throws IOException {

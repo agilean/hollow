@@ -16,8 +16,6 @@
  */
 package com.netflix.hollow.api.consumer.index;
 
-import static java.util.stream.Collectors.joining;
-
 import com.netflix.hollow.api.consumer.HollowConsumer;
 import com.netflix.hollow.api.custom.HollowAPI;
 import com.netflix.hollow.api.objects.HollowRecord;
@@ -26,11 +24,14 @@ import com.netflix.hollow.core.index.HollowHashIndex;
 import com.netflix.hollow.core.index.HollowHashIndexResult;
 import com.netflix.hollow.core.read.engine.HollowReadStateEngine;
 import com.netflix.hollow.core.write.objectmapper.HollowObjectTypeMapper;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * A type safe hash index, with result selection, for indexing non-primary-key data.
@@ -150,11 +151,6 @@ public class HashIndexSelect<T extends HollowRecord, S extends HollowRecord, Q>
     }
 
     @Override public void snapshotUpdateOccurred(HollowAPI api, HollowReadStateEngine stateEngine, long version) {
-        HollowHashIndex hhi = this.hhi;
-        hhi.detachFromDeltaUpdates();
-        hhi = new HollowHashIndex(consumer.getStateEngine(), rootTypeName, selectFieldPath, matchFieldPaths);
-        hhi.listenForDeltaUpdates();
-        this.hhi = hhi;
         this.api = api;
     }
 
@@ -166,6 +162,7 @@ public class HashIndexSelect<T extends HollowRecord, S extends HollowRecord, Q>
     }
 
     @Override public void refreshSuccessful(long beforeVersion, long afterVersion, long requestedVersion) {
+        this.hhi = new HollowHashIndex(consumer.getStateEngine(), rootTypeName, selectFieldPath, matchFieldPaths);
     }
 
     @Override public void refreshFailed(
